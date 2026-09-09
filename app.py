@@ -12,67 +12,22 @@ from metodos import (
     newton_raphson, newton_optimizacion, busqueda_aleatoria
 )
 from utils.graficar import graficar_1d, graficar_busqueda_aleatoria
-
-
-# ──────────────────────────────────────────────
-# Símbolos de SymPy (reutilizables)
-# ──────────────────────────────────────────────
-x, y = sp.symbols('x y')
-
-# Funciones matemáticas permitidas al parsear
-FUNCIONES_PERMITIDAS = {
-    'sin': sp.sin, 'cos': sp.cos, 'tan': sp.tan,
-    'asin': sp.asin, 'acos': sp.acos, 'atan': sp.atan,
-    'exp': sp.exp, 'log': sp.log, 'ln': sp.log,
-    'sqrt': sp.sqrt, 'abs': sp.Abs,
-    'pi': sp.pi, 'e': sp.E,
-}
-
-
-# ──────────────────────────────────────────────
-# Helpers con SymPy
-# ──────────────────────────────────────────────
-def parsear_funcion(expr_str, variables=(x,)):
-    """Convierte un string en una expresión simbólica y una función numérica."""
-    try:
-        expr = sp.sympify(expr_str, locals=FUNCIONES_PERMITIDAS)
-    except (sp.SympifyError, TypeError, ValueError) as e:
-        raise ValueError(f"Expresión inválida: {e}")
-    func_num = sp.lambdify(variables, expr, modules='numpy')
-    return expr, func_num
-
-
-def derivar(expr, var, orden=1):
-    """Calcula la derivada simbólica y la convierte a función numérica."""
-    derivada = sp.diff(expr, var, orden)
-    func_num = sp.lambdify((var,), derivada, modules='numpy')
-    return derivada, func_num
-
-
-def derivar_parcial(expr, var, orden=1):
-    """Derivada parcial para funciones multivariable."""
-    derivada = sp.diff(expr, var, orden)
-    func_num = sp.lambdify((x, y), derivada, modules='numpy')
-    return derivada, func_num
-
+from utils.sympy_utils import (
+    x, y, parsear_funcion, calcular_derivada, calcular_derivada_parcial, parsear_funcion_dinamica
+)
 
 def mostrar_expr(label, expr):
-    """Renderiza una expresión de SymPy en LaTeX."""
+    """Renderiza una expresión de SymPy en LaTeX dentro de Streamlit."""
     st.latex(f"{label} = {sp.latex(expr)}")
 
-
-# ──────────────────────────────────────────────
 # Configuración de la página
-# ──────────────────────────────────────────────
 st.set_page_config(page_title="Métodos de Optimización", page_icon="📐", layout="wide")
 
 st.title("📐 Métodos Numéricos de Optimización")
 st.markdown("Selecciona un método en la barra lateral. Las funciones se escriben con notación matemática natural (ej: `sin(x)`, `x**2`, `exp(-x)`).")
 
 
-# ──────────────────────────────────────────────
 # Sidebar
-# ──────────────────────────────────────────────
 st.sidebar.header("Método")
 metodo = st.sidebar.selectbox(
     "Elige un método:",
@@ -92,9 +47,7 @@ st.sidebar.markdown("**Funciones permitidas:**")
 st.sidebar.markdown("`sin`, `cos`, `tan`, `exp`, `log`, `sqrt`, `abs`, `pi`, `e`")
 
 
-# ──────────────────────────────────────────────
 # BISECCIÓN
-# ──────────────────────────────────────────────
 if metodo == "Bisección":
     st.header("Método de Bisección")
     st.markdown("Encuentra una **raíz** de $f(x) = 0$ en un intervalo $[x_l, x_u]$ donde $f$ cambia de signo.")
@@ -128,9 +81,7 @@ if metodo == "Bisección":
             st.error(f"❌ Error: {e}")
 
 
-# ──────────────────────────────────────────────
 # FALSA POSICIÓN
-# ──────────────────────────────────────────────
 elif metodo == "Falsa Posición":
     st.header("Método de Falsa Posición")
     st.markdown("Interpolación lineal para encontrar una **raíz**. Incluye la modificación de Illinois.")
@@ -164,9 +115,7 @@ elif metodo == "Falsa Posición":
             st.error(f"❌ Error: {e}")
 
 
-# ──────────────────────────────────────────────
 # RAZÓN DORADA
-# ──────────────────────────────────────────────
 elif metodo == "Razón Dorada":
     st.header("Método de Razón Dorada")
     st.markdown("Encuentra el **óptimo** (máximo o mínimo) de una función unimodal en $[x_l, x_u]$.")
@@ -201,9 +150,7 @@ elif metodo == "Razón Dorada":
             st.error(f"❌ Error: {e}")
 
 
-# ──────────────────────────────────────────────
 # INTERPOLACIÓN CUADRÁTICA
-# ──────────────────────────────────────────────
 elif metodo == "Interpolación Cuadrática":
     st.header("Interpolación Cuadrática")
     st.markdown("Ajusta una parábola a 3 puntos $(x_0, x_1, x_2)$ para encontrar el **óptimo**.")
@@ -239,9 +186,7 @@ elif metodo == "Interpolación Cuadrática":
             st.error(f"❌ Error: {e}")
 
 
-# ──────────────────────────────────────────────
 # NEWTON-RAPHSON (raíz)
-# ──────────────────────────────────────────────
 elif metodo == "Newton-Raphson (raíz)":
     st.header("Newton-Raphson (raíz)")
     st.markdown("Usa la derivada $f'(x)$ para encontrar una **raíz** de $f(x) = 0$. Converge muy rápido.")
@@ -256,7 +201,7 @@ elif metodo == "Newton-Raphson (raíz)":
 
     try:
         expr, _ = parsear_funcion(expr_str, variables=(x,))
-        expr_df, _ = derivar(expr, x, orden=1)
+        expr_df, _ = calcular_derivada(expr, x, orden=1)
         mostrar_expr("f(x)", expr)
         mostrar_expr("f'(x)", expr_df)
     except ValueError as e:
@@ -266,7 +211,7 @@ elif metodo == "Newton-Raphson (raíz)":
     if st.button("Calcular", type="primary", key="nr_calc"):
         try:
             _, f = parsear_funcion(expr_str, variables=(x,))
-            _, df_func = derivar(expr, x, orden=1)
+            _, df_func = calcular_derivada(expr, x, orden=1)
             raiz, df = newton_raphson(f, df_func, x0, error, max_iter)
             st.success(f"✅ Raíz encontrada: **x = {raiz:.6f}** en {len(df)} iteraciones")
             st.dataframe(df, use_container_width=True)
@@ -276,9 +221,7 @@ elif metodo == "Newton-Raphson (raíz)":
             st.error(f"❌ Error: {e}")
 
 
-# ──────────────────────────────────────────────
 # NEWTON (optimización)
-# ──────────────────────────────────────────────
 elif metodo == "Newton (optimización)":
     st.header("Newton para Optimización")
     st.markdown("Usa $f'(x)$ y $f''(x)$ para encontrar donde $f'(x) = 0$ (el **óptimo**).")
@@ -293,8 +236,8 @@ elif metodo == "Newton (optimización)":
 
     try:
         expr, _ = parsear_funcion(expr_str, variables=(x,))
-        expr_df, _ = derivar(expr, x, orden=1)
-        expr_ddf, _ = derivar(expr, x, orden=2)
+        expr_df, _ = calcular_derivada(expr, x, orden=1)
+        expr_ddf, _ = calcular_derivada(expr, x, orden=2)
         mostrar_expr("f(x)", expr)
         mostrar_expr("f'(x)", expr_df)
         mostrar_expr("f''(x)", expr_ddf)
@@ -305,8 +248,8 @@ elif metodo == "Newton (optimización)":
     if st.button("Calcular", type="primary", key="no_calc"):
         try:
             _, f = parsear_funcion(expr_str, variables=(x,))
-            _, df_func = derivar(expr, x, orden=1)
-            _, ddf_func = derivar(expr, x, orden=2)
+            _, df_func = calcular_derivada(expr, x, orden=1)
+            _, ddf_func = calcular_derivada(expr, x, orden=2)
             optimo, df = newton_optimizacion(f, df_func, ddf_func, x0, error, max_iter)
             etiqueta = "Máximo" if f(optimo) > f(x0) else "Mínimo"
             st.success(f"✅ {etiqueta} encontrado: **x = {optimo:.6f}**, f(x) = {f(optimo):.6f}")
@@ -317,51 +260,69 @@ elif metodo == "Newton (optimización)":
             st.error(f"❌ Error: {e}")
 
 
-# ──────────────────────────────────────────────
 # BÚSQUEDA ALEATORIA
-# ──────────────────────────────────────────────
 elif metodo == "Búsqueda Aleatoria":
     st.header("Búsqueda Aleatoria")
-    st.markdown("Muestreo aleatorio uniforme para optimización de **n variables**.")
+    st.markdown("Muestreo aleatorio uniforme para optimización de **N variables**.")
 
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        expr_str = st.text_input("f(x, y) =", value="y - x - 2*x**2 - 2*x*y - y**2", key="ba_f")
-        n_iter = st.number_input("Número de iteraciones", value=300, min_value=10, step=50, key="ba_n")
-        semilla = st.number_input("Semilla (reproducibilidad)", value=42, key="ba_sem")
-    with col2:
-        modo = st.selectbox("Modo", ["max", "min"], key="ba_modo")
-        st.markdown("**Rangos de búsqueda:**")
-        x_min = st.number_input("x mín", value=-2.0, key="ba_xmin")
-        x_max = st.number_input("x máx", value=2.0, key="ba_xmax")
-        y_min = st.number_input("y mín", value=1.0, key="ba_ymin")
-        y_max = st.number_input("y máx", value=3.0, key="ba_ymax")
+    expr_str = st.text_input(
+        "f(...) =", 
+        value="z - x - 2*x**2 - 2*x*y - y**2 - 2*y*z - z**2", 
+        key="ba_f"
+    )
 
+    # Parsing dinámico de variables
     try:
-        expr, _ = parsear_funcion(expr_str, variables=(x, y))
-        mostrar_expr("f(x, y)", expr)
+        expr, f, vars_syms = parsear_funcion_dinamica(expr_str)
+        nombres_vars = [v.name for v in vars_syms]
+        mostrar_expr(f"f({', '.join(nombres_vars)})", expr)
     except ValueError as e:
         st.error(f"❌ {e}")
         st.stop()
 
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        n_iter = st.number_input("Número de iteraciones", value=300, min_value=10, step=50, key="ba_n")
+        semilla = st.number_input("Semilla (reproducibilidad)", value=42, key="ba_sem")
+    with col2:
+        modo = st.selectbox("Modo", ["max", "min"], key="ba_modo")
+
+    # Generación dinámica de rangos según las variables detectadas
+    st.markdown("**Rangos de búsqueda por variable:**")
+    cols_rangos = st.columns(len(vars_syms))
+    rangos = []
+
+    for idx, var_sym in enumerate(vars_syms):
+        with cols_rangos[idx]:
+            st.caption(f"Variable: `{var_sym.name}`")
+            v_min = st.number_input(f"{var_sym.name} mín", value=-2.0, key=f"ba_{var_sym.name}_min")
+            v_max = st.number_input(f"{var_sym.name} máx", value=2.0, key=f"ba_{var_sym.name}_max")
+            rangos.append((v_min, v_max))
+
     if st.button("Calcular", type="primary", key="ba_calc"):
         try:
-            _, f = parsear_funcion(expr_str, variables=(x, y))
-            rangos = [(x_min, x_max), (y_min, y_max)]
             mejor_punto, mejor_valor, df = busqueda_aleatoria(
                 f, rangos, n_iter, semilla, modo
             )
             etiqueta = "Máximo" if modo == "max" else "Mínimo"
-            st.success(
-                f"✅ {etiqueta} encontrado:\n\n"
-                f"- x = {mejor_punto[0]:.4f}\n"
-                f"- y = {mejor_punto[1]:.4f}\n"
-                f"- f(x,y) = {mejor_valor:.4f}"
-            )
+            
+            res_text = f"✅ {etiqueta} encontrado:\n\n"
+            for idx, var_name in enumerate(nombres_vars):
+                res_text += f"- **{var_name}** = {mejor_punto[idx]:.4f}\n"
+            res_text += f"- **f({', '.join(nombres_vars)})** = {mejor_valor:.4f}"
+            
+            st.success(res_text)
             st.dataframe(df.head(20), use_container_width=True)
+            
             if len(df) > 20:
                 st.caption(f"Mostrando las primeras 20 de {len(df)} iteraciones.")
-            fig = graficar_busqueda_aleatoria(f, rangos, df, mejor_punto, mejor_valor, modo)
-            st.pyplot(fig)
+            
+            # Visualización condicional (Graficar solo si N = 2)
+            if len(vars_syms) == 2:
+                fig = graficar_busqueda_aleatoria(f, rangos, df, mejor_punto, mejor_valor, modo)
+                st.pyplot(fig)
+            else:
+                st.info(f"ℹ️ La gráfica del espacio de búsqueda solo está disponible para 2 variables (actualmente tienes {len(vars_syms)}: `{', '.join(nombres_vars)}`).")
+
         except Exception as e:
             st.error(f"❌ Error: {e}")
