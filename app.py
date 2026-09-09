@@ -233,6 +233,7 @@ elif metodo == "Newton (optimización)":
     with col2:
         error = st.number_input("Tolerancia", value=0.0001, format="%.6f", key="no_err")
         max_iter = st.number_input("Máximo iteraciones", value=100, key="no_max")
+        modo = st.selectbox("Modo deseado", ["max", "min"], key="no_modo")
 
     try:
         expr, _ = parsear_funcion(expr_str, variables=(x,))
@@ -250,12 +251,34 @@ elif metodo == "Newton (optimización)":
             _, f = parsear_funcion(expr_str, variables=(x,))
             _, df_func = calcular_derivada(expr, x, orden=1)
             _, ddf_func = calcular_derivada(expr, x, orden=2)
+            
+            # Cálculo del óptimo con la función original de Newton
             optimo, df = newton_optimizacion(f, df_func, ddf_func, x0, error, max_iter)
-            etiqueta = "Máximo" if f(optimo) > f(x0) else "Mínimo"
-            st.success(f"{etiqueta} encontrado: **x = {optimo:.6f}**, f(x) = {f(optimo):.6f}")
+            
+            # Evaluación del tipo de punto crítico usando la segunda derivada
+            ddf_val = ddf_func(optimo)
+            if ddf_val < -1e-12:
+                tipo_hallado = "máximo"
+            elif ddf_val > 1e-12:
+                tipo_hallado = "mínimo"
+            else:
+                tipo_hallado = "punto de inflexión"
+
+            # Verificación contra la elección del usuario
+            coincide = (modo == "max" and tipo_hallado == "máximo") or (modo == "min" and tipo_hallado == "mínimo")
+
+            if coincide:
+                st.success(f"✅ **{tipo_hallado.capitalize()}** local encontrado: **x = {optimo:.6f}**, f(x) = {f(optimo):.6f}")
+            else:
+                st.warning(
+                    f"⚠️ El método convergió a un **{tipo_hallado}** local en **x = {optimo:.6f}** (f(x) = {f(optimo):.6f}), "
+                    f"pero habías seleccionado **{modo}**. Prueba cambiando el punto inicial $x_0$."
+                )
+
             st.dataframe(df, use_container_width=True)
             fig = graficar_1d("Newton Optimización", f, (min(x0, optimo)-1, max(x0, optimo)+1), df, optimo, optimizacion=True)
             st.pyplot(fig)
+
         except Exception as e:
             st.error(f" Error: {e}")
 
