@@ -345,7 +345,7 @@ elif metodo == "Búsqueda Aleatoria":
             st.pyplot(fig)
 
             if len(vars_syms) != 2:
-                st.info(f"ℹEl mapa de contornos 2D está deshabilitado para {len(vars_syms)} variables (`{', '.join(nombres_vars)}`). Mostrando únicamente la gráfica de convergencia.")
+                st.info(f"ℹEl mapa de contornos 2D y mapa 3D están deshabilitados para {len(vars_syms)} variables (`{', '.join(nombres_vars)}`). Mostrando únicamente la gráfica de convergencia.")
 
         except Exception as e:
             st.error(f"Error: {e}")
