@@ -65,20 +65,20 @@ if metodo == "Bisección":
         expr, _ = parsear_funcion(expr_str, variables=(x,))
         mostrar_expr("f(x)", expr)
     except ValueError as e:
-        st.error(f"❌ {e}")
+        st.error(f" {e}")
         st.stop()
 
     if st.button("Calcular", type="primary", key="bis_calc"):
         try:
             _, f = parsear_funcion(expr_str, variables=(x,))
             raiz, df = biseccion(f, xl, xu, error, max_iter)
-            st.success(f"✅ Raíz encontrada: **x = {raiz:.6f}** en {len(df)} iteraciones")
+            st.success(f"Raíz encontrada: **x = {raiz:.6f}** en {len(df)} iteraciones")
             mostrar_expr("f(x_{raíz})", expr.subs(x, raiz))
             st.dataframe(df, use_container_width=True)
             fig = graficar_1d("Bisección", f, (min(xl, raiz)-2, max(xu, raiz)+2), df, raiz)
             st.pyplot(fig)
         except Exception as e:
-            st.error(f"❌ Error: {e}")
+            st.error(f" Error: {e}")
 
 
 # FALSA POSICIÓN
@@ -100,19 +100,19 @@ elif metodo == "Falsa Posición":
         expr, _ = parsear_funcion(expr_str, variables=(x,))
         mostrar_expr("f(x)", expr)
     except ValueError as e:
-        st.error(f"❌ {e}")
+        st.error(f" {e}")
         st.stop()
 
     if st.button("Calcular", type="primary", key="fp_calc"):
         try:
             _, f = parsear_funcion(expr_str, variables=(x,))
             raiz, df = falsa_posicion(f, xl, xu, error, max_iter, illinois)
-            st.success(f"✅ Raíz encontrada: **x = {raiz:.6f}** en {len(df)} iteraciones")
+            st.success(f"Raíz encontrada: **x = {raiz:.6f}** en {len(df)} iteraciones")
             st.dataframe(df, use_container_width=True)
             fig = graficar_1d("Falsa Posición", f, (min(xl, raiz)-2, max(xu, raiz)+2), df, raiz)
             st.pyplot(fig)
         except Exception as e:
-            st.error(f"❌ Error: {e}")
+            st.error(f" Error: {e}")
 
 
 # RAZÓN DORADA
@@ -134,7 +134,7 @@ elif metodo == "Razón Dorada":
         expr, _ = parsear_funcion(expr_str, variables=(x,))
         mostrar_expr("f(x)", expr)
     except ValueError as e:
-        st.error(f"❌ {e}")
+        st.error(f" {e}")
         st.stop()
 
     if st.button("Calcular", type="primary", key="rd_calc"):
@@ -142,12 +142,12 @@ elif metodo == "Razón Dorada":
             _, f = parsear_funcion(expr_str, variables=(x,))
             optimo, df = razon_dorada(f, xl, xu, error, modo, max_iter)
             etiqueta = "Máximo" if modo == "max" else "Mínimo"
-            st.success(f"✅ {etiqueta} encontrado: **x = {optimo:.6f}**, f(x) = {f(optimo):.6f}")
+            st.success(f"{etiqueta} encontrado: **x = {optimo:.6f}**, f(x) = {f(optimo):.6f}")
             st.dataframe(df, use_container_width=True)
             fig = graficar_1d("Razón Dorada", f, (xl, xu), df, optimo, optimizacion=True)
             st.pyplot(fig)
         except Exception as e:
-            st.error(f"❌ Error: {e}")
+            st.error(f" Error: {e}")
 
 
 # INTERPOLACIÓN CUADRÁTICA
@@ -170,7 +170,7 @@ elif metodo == "Interpolación Cuadrática":
         expr, _ = parsear_funcion(expr_str, variables=(x,))
         mostrar_expr("f(x)", expr)
     except ValueError as e:
-        st.error(f"❌ {e}")
+        st.error(f" {e}")
         st.stop()
 
     if st.button("Calcular", type="primary", key="ic_calc"):
@@ -178,12 +178,12 @@ elif metodo == "Interpolación Cuadrática":
             _, f = parsear_funcion(expr_str, variables=(x,))
             optimo, df = interpolacion(f, x0, x1, x2, error, modo, max_iter)
             etiqueta = "Máximo" if modo == "max" else "Mínimo"
-            st.success(f"✅ {etiqueta} encontrado: **x = {optimo:.6f}**, f(x) = {f(optimo):.6f}")
+            st.success(f"{etiqueta} encontrado: **x = {optimo:.6f}**, f(x) = {f(optimo):.6f}")
             st.dataframe(df, use_container_width=True)
             fig = graficar_1d("Interpolación", f, (min(x0, optimo)-1, max(x2, optimo)+1), df, optimo, optimizacion=True)
             st.pyplot(fig)
         except Exception as e:
-            st.error(f"❌ Error: {e}")
+            st.error(f" Error: {e}")
 
 
 # NEWTON-RAPHSON (raíz)
@@ -205,7 +205,7 @@ elif metodo == "Newton-Raphson (raíz)":
         mostrar_expr("f(x)", expr)
         mostrar_expr("f'(x)", expr_df)
     except ValueError as e:
-        st.error(f"❌ {e}")
+        st.error(f" {e}")
         st.stop()
 
     if st.button("Calcular", type="primary", key="nr_calc"):
@@ -213,12 +213,12 @@ elif metodo == "Newton-Raphson (raíz)":
             _, f = parsear_funcion(expr_str, variables=(x,))
             _, df_func = calcular_derivada(expr, x, orden=1)
             raiz, df = newton_raphson(f, df_func, x0, error, max_iter)
-            st.success(f"✅ Raíz encontrada: **x = {raiz:.6f}** en {len(df)} iteraciones")
+            st.success(f"Raíz encontrada: **x = {raiz:.6f}** en {len(df)} iteraciones")
             st.dataframe(df, use_container_width=True)
             fig = graficar_1d("Newton-Raphson", f, (min(x0, raiz)-2, max(x0, raiz)+2), df, raiz)
             st.pyplot(fig)
         except Exception as e:
-            st.error(f"❌ Error: {e}")
+            st.error(f" Error: {e}")
 
 
 # NEWTON (optimización)
@@ -242,7 +242,7 @@ elif metodo == "Newton (optimización)":
         mostrar_expr("f'(x)", expr_df)
         mostrar_expr("f''(x)", expr_ddf)
     except ValueError as e:
-        st.error(f"❌ {e}")
+        st.error(f" {e}")
         st.stop()
 
     if st.button("Calcular", type="primary", key="no_calc"):
@@ -252,12 +252,12 @@ elif metodo == "Newton (optimización)":
             _, ddf_func = calcular_derivada(expr, x, orden=2)
             optimo, df = newton_optimizacion(f, df_func, ddf_func, x0, error, max_iter)
             etiqueta = "Máximo" if f(optimo) > f(x0) else "Mínimo"
-            st.success(f"✅ {etiqueta} encontrado: **x = {optimo:.6f}**, f(x) = {f(optimo):.6f}")
+            st.success(f"{etiqueta} encontrado: **x = {optimo:.6f}**, f(x) = {f(optimo):.6f}")
             st.dataframe(df, use_container_width=True)
             fig = graficar_1d("Newton Optimización", f, (min(x0, optimo)-1, max(x0, optimo)+1), df, optimo, optimizacion=True)
             st.pyplot(fig)
         except Exception as e:
-            st.error(f"❌ Error: {e}")
+            st.error(f" Error: {e}")
 
 
 # BÚSQUEDA ALEATORIA
@@ -317,12 +317,12 @@ elif metodo == "Búsqueda Aleatoria":
             if len(df) > 20:
                 st.caption(f"Mostrando las primeras 20 de {len(df)} iteraciones.")
             
-            # Visualización condicional (Graficar solo si N = 2)
-            if len(vars_syms) == 2:
-                fig = graficar_busqueda_aleatoria(f, rangos, df, mejor_punto, mejor_valor, modo)
-                st.pyplot(fig)
-            else:
-                st.info(f"ℹ️ La gráfica del espacio de búsqueda solo está disponible para 2 variables (actualmente tienes {len(vars_syms)}: `{', '.join(nombres_vars)}`).")
+            # Graficar siempre la convergencia (y el mapa de contornos si N=2)
+            fig = graficar_busqueda_aleatoria(f, rangos, df, mejor_punto, mejor_valor, modo)
+            st.pyplot(fig)
+
+            if len(vars_syms) != 2:
+                st.info(f"ℹEl mapa de contornos 2D está deshabilitado para {len(vars_syms)} variables (`{', '.join(nombres_vars)}`). Mostrando únicamente la gráfica de convergencia.")
 
         except Exception as e:
-            st.error(f"❌ Error: {e}")
+            st.error(f"Error: {e}")
