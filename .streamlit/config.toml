@@ -1,6 +1,14 @@
 [theme]
-primaryColor = "#951A8E"
-backgroundColor = "#0F202A"
-secondaryBackgroundColor = "#1D1A76"
+# Rosa fucsia/pastel para botones de "Calcular" e interactivos
+primaryColor = "#F472B6"
+
+# Fondo principal: Azul noche/índigo profundo
+backgroundColor = "#0F1123"
+
+# Fondo del Sidebar: Tu morado exacto (#68528D)
+secondaryBackgroundColor = "#68528D"
+
+# Texto blanco puro para alta legibilidad en tablas y fórmulas
 textColor = "#FFFFFF"
+
 font = "sans serif"
