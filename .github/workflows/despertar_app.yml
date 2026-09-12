@@ -1,0 +1,41 @@
+name: Mantener App de Streamlit Despierta
+
+on:
+  schedule:
+    # Se ejecuta automáticamente cada 4 horas (puedes ajustar el tiempo)
+    - cron: '0 */4 * * *'
+  workflow_dispatch: # Permite activar el proceso manualmente desde GitHub
+
+jobs:
+  visitar_app:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Configurar Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-size: 20
+
+    - name: Instalar Playwright (Navegador Automatizado)
+      run: |
+        npm install playwright
+        npx playwright install chromium
+
+    - name: Abrir y simular tráfico en la App
+      run: |
+        node -e "
+        const { chromium } = require('playwright');
+        (async () => {
+          const browser = await chromium.launch({ headless: true });
+          const page = await browser.newPage();
+          
+          console.log('Abriendo la aplicación de Streamlit...');
+          await page.goto('https://camss-numerical-methods-toolkit.streamlit.app', { waitUntil: 'networkidle', timeout: 60000 });
+          
+          console.log('Esperando que cargue la interfaz...');
+          await page.waitForTimeout(10000); // Espera 10 segundos en la página
+          
+          console.log('Visita completada con éxito.');
+          await browser.close();
+        })();
+        "
